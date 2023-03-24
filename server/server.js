@@ -1,20 +1,25 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const itemsRouter = require('./routes/items');
-
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const Item = require('./item')
 const app = express();
+require('./db');
 
-// Connect to MongoDB database
-mongoose.connect('mongodb://localhost/my-database', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-  .then(() => console.log('MongoDB connected...'))
-  .catch(err => console.log(err));
+app.get('/items', async (req, res) => {
+  try {
+    const items = await Item.find();
+    res.json(items);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
 
-// Load routes
-app.use('/api/items', itemsRouter);
+const port = process.env.PORT || 5000;
 
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.use(cors());
+app.use(bodyParser.json());
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
